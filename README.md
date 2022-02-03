@@ -16,3 +16,33 @@ shape. The model understands by learning the valuable spatial information and
 spectral information available in the macromolecular structure data set. Valuable
 features detected by the convolution layers that are important for classification are
 given importance, thereby improving the overall model accuracy.
+
+Folder structure:
+
+    new data
+    |
+    |--SNR003
+    |    |
+    |    |--1bxn
+    |    |   |
+    |    |   |--subtomogram_mrc 
+    |    |   |--subtomogram_png
+    |    |   |--densitymap_mrc
+    |    |   |--densitymap_png
+    |    |   |--json_label
+    |    |   |--json_simulation
+    |    |
+    |    |
+    |    |--1f1b, 1yg6, 2byu, 2h12, 2ldb, 3gl1, 3hhb, 4d4r, 6t3e
+    |        |
+    |        |...(the same as 1bxn)
+    |    
+    |
+    |--SNR005
+    |    |
+    |    |...(the same as SNR003)
+    |  
+    |  
+    |--SNR infinity
+         |
+         |...(the same as SNR003)
