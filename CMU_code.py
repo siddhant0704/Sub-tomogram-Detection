@@ -11,7 +11,7 @@ from numpy import array
 import mrcfile
 from tensorflow.keras import layers
 
-root = '../input/train0005/train_005'
+root = '../input/cmuproject1/train_005'
 folders = os.listdir(root)
 X = []
 Y = []
@@ -19,7 +19,7 @@ names = {}
 ptr = 0
 
 for folder in folders:
-    #print(folder)
+    # print(folders)
     names[ptr] = folder
     # print(names)
     files = os.listdir(os.path.join(root, folder))
@@ -50,7 +50,7 @@ print(X[0].shape)
 
 # X = X.reshape(X.shape[0], -1)
 X_train, X_test, Y_train, Y_test = train_test_split(
-    X, Y, shuffle=True, test_size=0.1, random_state=123)
+    X, Y, shuffle=True, test_size=0.4, random_state=123)
 
 X_train = X_train.reshape((-1, 32, 32, 32, 1))
 X_test = X_test.reshape((-1, 32, 32, 32, 1))
@@ -69,7 +69,7 @@ def SE(i):
     R = i.shape[4]
     se_shape = (1, 1, 1, R)
     print(R)
-    r = R//12
+    r = R//8
     x = GlobalAveragePooling3D()(i)
     print(x.shape)
     x = Reshape(se_shape)(x)
@@ -82,48 +82,48 @@ def SE(i):
     return output
 
 
-x1 = layers.Conv3D(filters=16, kernel_size=(3, 3, 3), activation="relu")(inputs)
-#x1 = layers.MaxPool3D(pool_size=2)(x1)
-x1 = layers.BatchNormalization()(x1)
-x1 = SE(x1)
-x1 = SE(x1)
 x1 = layers.Conv3D(filters=32, kernel_size=(3, 3, 3), activation="relu")(inputs)
 x1 = layers.MaxPool3D(pool_size=2)(x1)
 x1 = layers.BatchNormalization()(x1)
-x1 = SE(x1)
-x1 = SE(x1)
+
 x1 = layers.Conv3D(filters=64, kernel_size=3, activation="relu")(x1)
 #x1 = layers.MaxPool3D(pool_size=2)(x1)
 x1 = layers.BatchNormalization()(x1)
-x1 = SE(x1)
+print(x1.shape)
 x1 = SE(x1)
 x1 = layers.Conv3D(filters=128, kernel_size=3, activation="relu")(x1)
 x1 = layers.MaxPool3D(pool_size=2)(x1)
 x1 = layers.BatchNormalization()(x1)
 x1 = SE(x1)
-x1 = SE(x1)
 x1 = layers.Conv3D(filters=256, kernel_size=3, activation="relu")(x1)
 # x = layers.MaxPool3D(pool_size=2)(x)
 x1 = layers.BatchNormalization()(x1)
 x1 = SE(x1)
-x1 = SE(x1)
 x1 = layers.Flatten()(x1)
-x1 = layers.Dense(units=1024, activation="relu")(x1)
-x1 = layers.Dropout(0.3)(x1)
-x1 = layers.Dense(units=1024, activation="relu")(x1)
-x1 = layers.Dropout(0.3)(x1)
+x1 = layers.Dense(units=512, activation="relu")(x1)
+x1 = layers.Dropout(0.2)(x1)
+x1 = layers.Dense(units=512, activation="relu")(x1)
+x1 = layers.Dropout(0.2)(x1)
 output = layers.Dense(units=10, activation='softmax')(x1)
 model = tf.keras.Model(inputs=inputs, outputs=output)
 print(model.summary())
 
-kop = KOP.SGD(lr=0.004, decay=1e-7, momentum=0.9, nesterov=True)
+kop = KOP.SGD(lr=0.005, decay=1e-7, momentum=0.9, nesterov=True)
 model.compile(optimizer=kop, loss='categorical_crossentropy', metrics=['accuracy'])
 
+callback = tf.keras.callbacks.EarlyStopping(monitor='accuracy', patience=3)
+
+model.fit(X_train, Y_train, batch_size=60, epochs=20, verbose=1, callbacks=[callback])
 
 
-model.fit(X_train, Y_train, batch_size=50, epochs=22)
-
-
-(eval_loss, eval_accuracy) = model.evaluate(X_test, Y_test, batch_size=50, verbose=1)
+(eval_loss, eval_accuracy) = model.evaluate(X_train, Y_train, batch_size=50, verbose=1)
 print(eval_accuracy * 100)
 
+
+
+model.save('my_model.h5') 
+
+model1 = tf.keras.models.load_model('./my_model.h5')
+print(model1.summary())
+scores = model.evaluate(X_test, Y_test, verbose=0)
+print("%s: %.2f%%" % (model.metrics_names[1], scores[1]*100))
