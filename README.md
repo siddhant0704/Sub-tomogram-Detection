@@ -17,7 +17,7 @@ spectral information available in the macromolecular structure data set. Valuabl
 features detected by the convolution layers that are important for classification are
 given importance, thereby improving the overall model accuracy.
 
-Folder structure:
+Data  structure used for the project:
 
     new data
     |
